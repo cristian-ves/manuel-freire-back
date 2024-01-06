@@ -29,82 +29,91 @@ app.post("/submit", (req, res) => {
     },
   });
 
+  const proposalHTML = `
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <link href="https://fonts.googleapis.com/css2?family=Inter&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet">
+      <style>
+        .container {
+          font-family: "Lato", sans-serif;
+        }
+
+        .header {
+          color: #eee;
+          background: #0f7490;
+          margin: 0;
+          padding: 0.8rem;
+        }
+
+        .data-container {
+          background: #f1fdfb;
+          padding-left: 1rem;
+        }
+
+        .data {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+        }
+
+        .data li {
+          margin-bottom: 0.5rem;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">Propuesta de proyecto</div>
+        <div class="data-container">
+          <h1>¡Un cliente ha ingresado una nueva propuesta!</h1>
+          <table class="data">
+            <tr>
+              <td>Nombre:</td>
+              <td>${nombre}</td>
+            </tr>
+            <tr>
+              <td>Correo electrónico:</td>
+              <td>${correo}</td>
+            </tr>
+            ${
+              llamadaCheckbox === "true"
+                ? `<tr><td>Teléfono:</td><td>${telefono}</td></tr>`
+                : ""
+            }
+            <tr>
+              <td>Descripción:</td>
+              <td>${descripcion}</td>
+            </tr>
+          </table>
+          <p>El cliente ha aceptado las políticas de privacidad</p>
+          ${
+            llamadaCheckbox === "true"
+              ? "<p>El cliente ha aceptado recibir una llamada telefónica en horas hábiles</p>"
+              : "<p>El cliente <strong>NO</strong> ha aceptado recibir una llamada telefónica en horas hábiles</p>"
+          }
+          <a href="manupintores.es">Ir a la página web</a>
+          <!-- TODO: poner dominio de página web -->
+        </div>
+      </div>
+    </body>
+  </html>
+
+  `;
+
   const proposalMailOptions = {
+    from: emailRoot,
+    to: "manuelfm_1965@hotmail.com",
+    subject: "Nueva propuesta",
+    html: proposalHTML,
+  };
+
+  const proposalMailOptionsBackUp = {
     from: emailRoot,
     to: emailRoot,
     subject: "Nueva propuesta",
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <link href="https://fonts.googleapis.com/css2?family=Inter&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet">
-        <style>
-          .container {
-            font-family: "Lato", sans-serif;
-          }
-
-          .header {
-            color: #eee;
-            background: #0f7490;
-            margin: 0;
-            padding: 0.8rem;
-          }
-
-          .data-container {
-            background: #f1fdfb;
-            padding-left: 1rem;
-          }
-
-          .data {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-          }
-
-          .data li {
-            margin-bottom: 0.5rem;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">Propuesta de proyecto</div>
-          <div class="data-container">
-            <h1>¡Un cliente ha ingresado una nueva propuesta!</h1>
-            <table class="data">
-              <tr>
-                <td>Nombre:</td>
-                <td>${nombre}</td>
-              </tr>
-              <tr>
-                <td>Correo electrónico:</td>
-                <td>${correo}</td>
-              </tr>
-              ${
-                llamadaCheckbox === "true"
-                  ? `<tr><td>Teléfono:</td><td>${telefono}</td></tr>`
-                  : ""
-              }
-              <tr>
-                <td>Descripción:</td>
-                <td>${descripcion}</td>
-              </tr>
-            </table>
-            <p>El cliente ha aceptado las políticas de privacidad</p>
-            ${
-              llamadaCheckbox === "true"
-                ? "<p>El cliente ha aceptado recibir una llamada telefónica en horas hábiles</p>"
-                : "<p>El cliente <strong>NO</strong> ha aceptado recibir una llamada telefónica en horas hábiles</p>"
-            }
-            <a href="manupintores.es">Ir a la página web</a>
-            <!-- TODO: poner dominio de página web -->
-          </div>
-        </div>
-      </body>
-    </html>
-
-    `,
+    html: proposalHTML,
   };
 
   const clientMailOptions = {
@@ -186,6 +195,15 @@ app.post("/submit", (req, res) => {
   };
 
   transporter.sendMail(proposalMailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+      res.status(500).send("Error sending email", " ", error);
+    } else {
+      res.send("Thank you for submitting the form!");
+    }
+  });
+
+  transporter.sendMail(proposalMailOptionsBackUp, (error, info) => {
     if (error) {
       console.log(error);
       res.status(500).send("Error sending email", " ", error);
